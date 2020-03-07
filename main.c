@@ -115,7 +115,7 @@ void print_high_noon_time (char *text, BOOL opt_utc, const char *tz,
 
 
 /*=======================================================================
-get_named_days_today
+initialize_day_events
 =======================================================================*/
 PointerList *initialize_day_events (const char *tz, BOOL utc, int year, 
     const LatLong *latlong)
@@ -163,72 +163,9 @@ void free_day_events (PointerList *events)
 
 
 /*=======================================================================
-list_named_days
-=======================================================================*/
-void list_named_days (PointerList *day_events, const DateTime *start, 
-     const char *tz, BOOL utc)
-  {
-  DateTime *d = DateTime_clone (start);
-  int i;
-  for (i = 0; i < 365; /* leap year? */ i++)
-    {
-    int i, l = PointerList_get_length (day_events);
-    for (i = 0; i < l; i++)
-      {
-      DateTime *event = PointerList_get_pointer (day_events, i);
-      if (DateTime_is_same_day_of_year (d, event))
-        {
-        int j;
-        const char *name = DateTime_get_name (event);
-        char *s = DateTime_date_to_string_syslocal (event);
-        printf ("%s", s);
-        putchar (' ');
-        for (j = strlen (s); j < 26; j++) 
-          putchar (' ');
-        printf ("%s", name);
-        int dummy, hour, min, sec;
-        DateTime_get_ymdhms (event, &dummy, &dummy, &dummy, &hour,
-          &min, &sec, tz, utc);
-        if (hour == 0 && min == 0 && sec == 0)
-          {
-          // All day event
-          }
-        else
-          {
-          printf (" (%02d:%02d)", hour, min);
-          }
-        putchar ('\n');
-        free (s);
-        }
-      }
-    DateTime_add_days (d, 1, tz, utc); 
-    } 
-  DateTime_free (d);
-  }
-
-
-/*=======================================================================
-get_stars
-=======================================================================*/
-const char *get_stars (double score)
-  {
-  static char s [20];
-  s[10] = 0;
-  int i;
-  for (i = 0; i < 10; i++)
-    {
-    if (score > (double) i / 10.0)
-      s[i] = '*';
-    else
-      s[i] = ' ';
-    }
-  return s;
-  }
-
-/*=======================================================================
 process
 =======================================================================*/
-int process (char *city, char *latlong, char *datetime, BOOL opt_utc, BOOL opt_syslocal, BOOL opt_list_named_days, BOOL opt_show_solunar) {
+int process (char *city, char *latlong, char *datetime, BOOL opt_utc, BOOL opt_syslocal, BOOL opt_show_solunar) {
   BOOL opt_twelvehour = FALSE;
 
   BOOL show_sunrise_sunset = TRUE;
@@ -346,18 +283,6 @@ int process (char *city, char *latlong, char *datetime, BOOL opt_utc, BOOL opt_s
   free (s);
   printf ("\n");
 
-  if (opt_list_named_days) {
-    if (!datetimeObj) {
-      fprintf (stderr, "Can't list days because no starting date has been specified.\n");
-      free_day_events (day_events);
-      exit (-1);
-    }
-    DateTime *jan_first = DateTime_get_jan_first (datetimeObj, tz, opt_utc);
-    list_named_days (day_events, jan_first, tz, opt_utc);
-    DateTime_free (jan_first);
-    exit (0);
-  }
- 
   DateTime *start = DateTime_get_day_start (datetimeObj, tz);
 
   if (show_today) {
@@ -549,8 +474,8 @@ int process (char *city, char *latlong, char *datetime, BOOL opt_utc, BOOL opt_s
       printf ("Time     Sun        Moon       Combined\n");
       printf ("====     ===        ====       ========\n");
     } else {
-      printf ("Time  Sun        Moon       Combined\n");
-      printf ("====  ===        ====       ========\n");
+      printf ("Time    Sun        Moon       Combined\n");
+      printf ("====    ===        ====       ========\n");
     }
 
     mn = DateTime_new_dmy_name (day, month, year, "", tz, opt_utc);
@@ -611,10 +536,10 @@ int process (char *city, char *latlong, char *datetime, BOOL opt_utc, BOOL opt_s
         got_solunar = FALSE; 
       }
 
-      printf ("%s ", ts);
-      printf ("%s ", get_stars (sunscore));
-      printf ("%s ", get_stars (moonscore));
-      printf ("%s\n", get_stars (combined_score));
+      printf ("%s   ", ts);
+      printf ("%f   ", sunscore);
+      printf ("%f   ", moonscore);
+      printf ("%f\n", combined_score);
 
       DateTime_add_seconds (mn, 1800);
       DateTime_free (t_center);
@@ -685,7 +610,6 @@ int main (int argc, char **argv)
   {
   static BOOL opt_utc = FALSE;
   static BOOL opt_syslocal = FALSE;
-  static BOOL opt_list_named_days = FALSE;
   static BOOL opt_show_solunar = FALSE;
   
   static struct option long_options[] = {
@@ -694,7 +618,6 @@ int main (int argc, char **argv)
     {"latlong", required_argument, NULL, 'l'},
     {"utc", no_argument, &opt_utc, 'v'},
     {"syslocal", no_argument, &opt_syslocal, 'y'},
-    {"days", no_argument, &opt_list_named_days, 0},
     {"solunar", no_argument, &opt_show_solunar, 0},
     {0, 0, 0, 0},
   };
@@ -718,9 +641,7 @@ int main (int argc, char **argv)
             opt_syslocal = TRUE;
           }
 
-          if (strcmp (long_options[option_index].name, "days") == 0) {
-            opt_list_named_days = TRUE;
-          } else if (strcmp (long_options[option_index].name, "solunar") == 0) {
+          if (strcmp (long_options[option_index].name, "solunar") == 0) {
             opt_show_solunar = TRUE;
           } else if (strcmp (long_options[option_index].name, "city") == 0) {
             city = strdup (optarg);
@@ -752,6 +673,6 @@ int main (int argc, char **argv)
       }
     }
 
-    return process(city, latlong, datetime, opt_utc, opt_syslocal, opt_list_named_days, opt_show_solunar);
+    return process(city, latlong, datetime, opt_utc, opt_syslocal, opt_show_solunar);
   }
 

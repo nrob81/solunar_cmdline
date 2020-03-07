@@ -171,7 +171,7 @@ int process (char *city, char *latlong, char *datetime, BOOL opt_utc, BOOL opt_s
   BOOL show_sunrise_sunset = TRUE;
   BOOL show_moon_state = TRUE;
   BOOL show_moon_rise_set = TRUE;
-  BOOL show_today = TRUE;
+  BOOL show_today = FALSE;
   char *tz = NULL;
   DateTime *datetimeObj = NULL;
   City *cityObj = NULL;
@@ -344,6 +344,7 @@ int process (char *city, char *latlong, char *datetime, BOOL opt_utc, BOOL opt_s
     print_sunset_time ("                        Sunset: ", SUNTIMES_DEFAULT_ZENITH, opt_utc, tz, workingLatlong, datetimeObj, twelve_hour, opt_syslocal); 
     print_high_noon_time ("                     High noon: ", opt_utc, tz, workingLatlong, datetimeObj, twelve_hour, opt_syslocal); 
 
+    /*
     print_sunrise_time ("         Civil twilight starts: ", SUNTIMES_CIVIL_TWILIGHT, opt_utc, tz, workingLatlong, datetimeObj, twelve_hour, opt_syslocal); 
     print_sunset_time ("           Civil twilight ends: ", SUNTIMES_NAUTICAL_TWILIGHT, opt_utc, tz, workingLatlong, datetimeObj, twelve_hour, opt_syslocal); 
 
@@ -351,6 +352,7 @@ int process (char *city, char *latlong, char *datetime, BOOL opt_utc, BOOL opt_s
     print_sunset_time ("        Nautical twilight ends: ", SUNTIMES_NAUTICAL_TWILIGHT, opt_utc, tz, workingLatlong, datetimeObj, twelve_hour, opt_syslocal); 
     print_sunrise_time ("  Astronomical twilight starts: ", SUNTIMES_ASTRONOMICAL_TWILIGHT, opt_utc, tz, workingLatlong, datetimeObj, twelve_hour, opt_syslocal); 
     print_sunset_time ("    Astronomical twilight ends: ", SUNTIMES_ASTRONOMICAL_TWILIGHT, opt_utc, tz, workingLatlong, datetimeObj, twelve_hour, opt_syslocal); 
+    */
     printf ("\n");
   }
 

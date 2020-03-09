@@ -19,7 +19,7 @@ solunar: $(OBJS)
 	$(CC) $(MYCFLAGS) -o $*.o -c $*.c
 
 clean:
-	rm -f *.o solunar
+	rm -f *.o solunar index.*
 
 # Uncomment these lines if you want to parse zone.tab into a more
 # up-to-date cityinfo.h. And, if your system have a zone.tab. And if you
